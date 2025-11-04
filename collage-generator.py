@@ -5,14 +5,18 @@ from datetime import datetime
 import threading
 import signal
 import sys
+import cv2
+import os
+
 
 startDate = datetime.now()
 
 # ====================== CONFIG ======================
 INPUT_IMAGE = "patrick.png"
 INPUT_IMAGES_PATH = "testImages"
-SCALE = 10 # How many images per pixel of the input image
-RESOLUTION = 10  # Size of each tile
+#SCALE = 100 # How many images per pixel of the input image
+RESOLUTION = 5  # Size of each tile
+useCache = True
 # ====================================================
 
 
@@ -31,6 +35,16 @@ def progress_bar(iteration, total, prefix='', suffix='', length=50, fill='█'):
     bar = fill * filled_length + '-' * (length - filled_length)
     print(f'\r{prefix} |{bar}| {percent}% {suffix}', end='', flush=True)
 
+def cacheInputImages():
+    cache = []
+    counter=0
+    for filename in os.listdir(INPUT_IMAGES_PATH):
+        if filename.lower().endswith(".png"):
+            imgPath = os.path.join(INPUT_IMAGES_PATH, f"picsumImg{counter}.png")
+            cache.append(Image.open(imgPath))
+            counter+=1
+    
+    return cache
 
 def computeAvgRGB(img):
 
@@ -59,7 +73,7 @@ def findBestMatch(avg_rgb, all_rgb_vals, tolerance):
         
         # Check if all channels are within the tolerance
         mask = np.all(diff <= tolerance, axis=1)
-        
+        elapsedSeconds = int(((datetime.now() - startDate).total_seconds() / 60) *100)
         if np.any(mask):
             return np.argmax(mask)  # Return the index of the first match
         
@@ -67,15 +81,15 @@ def findBestMatch(avg_rgb, all_rgb_vals, tolerance):
         tolerance += 5
 
 
-def createCollage(startX, startY, endY, img):
+def createCollage(img):
     
     completedNum = 0
     tolerance = 10
 
     output_img = Image.new('RGB', (int(img.width/RESOLUTION)*RESOLUTION, int(img.height/RESOLUTION)*RESOLUTION))
 
-    for y in range(startY, endY):
-        for x in range(startX, int(img.width/RESOLUTION)):
+    for y in range(int(img.height/RESOLUTION)):
+        for x in range(int(img.width/RESOLUTION)):
 
             # Crop image and convert
             crop_dimensions = (x*RESOLUTION, y*RESOLUTION, x*RESOLUTION+RESOLUTION, y*RESOLUTION+RESOLUTION)
@@ -89,7 +103,11 @@ def createCollage(startX, startY, endY, img):
             bestMatchIndex = findBestMatch(croppedImageAverageRgbValues, allRgbVals, tolerance)
                 
             # Open and resize selected image
-            selectedImg = Image.open(f"{INPUT_IMAGES_PATH}/picsumImg{bestMatchIndex}.png")
+            if(useCache):
+                selectedImg = cahcedImages[bestMatchIndex]
+            else:
+                selectedImg = Image.open(f"{INPUT_IMAGES_PATH}/picsumImg{bestMatchIndex}.png")
+            
             selectedImg = selectedImg.resize( (RESOLUTION, RESOLUTION) )
 
             # Paste it to the output
@@ -112,9 +130,17 @@ with open(f"{INPUT_IMAGES_PATH}/avg_rgb_values.txt", "r") as file:
 inputImg = Image.open(INPUT_IMAGE)
 total = int(inputImg.height/RESOLUTION) * int(inputImg.width/RESOLUTION)
 
-finalImg = createCollage(0,0,int(inputImg.height/RESOLUTION), inputImg)
+if(useCache):
+    cahcedImages = cacheInputImages()
 
-finalImg.save("output.png")
+finalImg = createCollage(inputImg)
+
+savePath = f"{INPUT_IMAGE.strip(".png")}-collage.png"
+
+finalImg.save(savePath)
 finalImg.show()
 
-print(f"\n✅ Elapsed Time: {(datetime.now() - startDate).total_seconds() / 60:.2f} minutes")
+elapsedMinutes = (datetime.now() - startDate).total_seconds() / 60
+
+
+print(f"\n✅ Elapsed Time: {elapsedMinutes:.2f} minutes")
