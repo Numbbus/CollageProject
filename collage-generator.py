@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageTk
 import ast
 import numpy as np
 from datetime import datetime
@@ -7,18 +7,97 @@ import signal
 import sys
 import cv2
 import os
+import tkinter as tk
 
 
 startDate = datetime.now()
 
 # ====================== CONFIG ======================
-INPUT_IMAGE = "galaxy.png"
-INPUT_IMAGES_PATH = "testImages"
+INPUT_IMAGE = "baypath.png"
+INPUT_IMAGES_PATH = "images"
 #SCALE = 100 # How many images per pixel of the input image
-RESOLUTION = 25  # Size of each tile
+RESOLUTION = 10  # Size of each tile
 useCache = True
+useWebcam = True
+openWindowWhenDone = False
 # ====================================================
 
+def getNextFrame(cap):
+    ret, frame = cap.read()
+    if not ret or frame is None:
+        print("Warning: Failed to grab frame.")
+        return None
+    return frame
+
+def videoLoop(frame, root, cap):
+    frame = getNextFrame(cap)
+    if frame is None:
+        return
+
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    bgImg = Image.fromarray(rgb_frame)
+
+    bgImgCollage = createCollage(bgImg)
+
+    collageBgTk = ImageTk.PhotoImage(image=bgImgCollage)  # Convert to PhotoImage
+    
+
+    # If the label already exists, just update the image
+    if hasattr(videoLoop, "label"):
+        videoLoop.label.configure(image=collageBgTk)
+        videoLoop.label.image = collageBgTk  # keep a reference
+    else:
+        videoLoop.label = tk.Label(root, image=collageBgTk)
+        videoLoop.label.pack()
+        videoLoop.label.image = collageBgTk  # keep a reference
+
+    root.after(30, videoLoop, frame, root, cap)  # smaller delay for smoother video
+
+def videoFeed(width, height):
+    cap = cv2.VideoCapture(0)
+
+    if not cap.isOpened():
+        print("Error: Could not open webcam.")
+        exit()
+
+    frame = cap.read()
+
+    root = tk.Tk()
+
+    root.title("Collage Video Feed")
+
+    root.geometry(f"{width}x{height}")
+
+    root.resizable(False, False)
+
+    root.after(30, videoLoop, frame, root, cap)
+
+    root.mainloop()
+
+
+
+def openWindow(width, height, img):
+    # Create the main window (root window)
+    root = tk.Tk()
+
+    # Set the window title
+    root.title("My Python Window")
+    # Set the window dimensions (width x height)
+    image = Image.open(savePath)
+
+    root.geometry(f"{image.width}x{image.height}")
+
+    root.resizable(False, False)
+
+
+
+    photo = ImageTk.PhotoImage(image)
+
+    label = tk.Label(root, image=photo)
+    label.pack()
+
+    # Start the Tkinter event loop, which displays the window and handles interactions
+    root.mainloop()
 
 def progress_bar(iteration, total, prefix='', suffix='', length=50, fill='█'):
     """
@@ -128,18 +207,32 @@ with open(f"{INPUT_IMAGES_PATH}/avg_rgb_values.txt", "r") as file:
     allRgbVals = ast.literal_eval(file.readline())
 
 inputImg = Image.open(INPUT_IMAGE)
-total = int(inputImg.height/RESOLUTION) * int(inputImg.width/RESOLUTION)
+total = (int(inputImg.height/RESOLUTION) * int(inputImg.width/RESOLUTION)) // 3
 
 if(useCache):
     cahcedImages = cacheInputImages()
 
-finalImg = createCollage(inputImg)
 
-savePath = f"{INPUT_IMAGE.strip(".png")}-collage.png"
+if(useWebcam):
 
-finalImg.save(savePath)
-finalImg.show()
+    videoFeed(640, 480)
 
-elapsedSeconds = (datetime.now() - startDate).total_seconds()
+else:
 
-print(f"\n✅ Elapsed Time: {elapsedSeconds:.2f} seconds")
+    finalImg = createCollage(inputImg)
+
+    savePath = f"{INPUT_IMAGE.strip(".png")}-collage.png"
+
+    finalImg.save(savePath)
+
+    if openWindowWhenDone:
+        elapsedSeconds = (datetime.now() - startDate).total_seconds()
+
+        print(f"\n✅ Elapsed Time: {elapsedSeconds:.2f} seconds")
+        openWindow(finalImg.width, finalImg.height, finalImg)
+    else:
+        finalImg.show()
+
+        elapsedSeconds = (datetime.now() - startDate).total_seconds()
+
+        print(f"\n✅ Elapsed Time: {elapsedSeconds:.2f} seconds")
