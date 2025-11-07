@@ -228,6 +228,9 @@ def createAndSaveCollage(img, res):
 
     res = abs(res)
 
+    if(res == 0):
+        return "static/images/error.png"
+
     total = (int(img.height/res) * int(img.width/res))
 
     outputWidth = int(img.width/res)*res

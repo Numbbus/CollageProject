@@ -17,8 +17,8 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-PORT = 8000
-HOST = "0.0.0.0"
+PORT = 3000
+HOST = "10.30.1.9"
 
 
 # Point FastAPI to your templates directory
