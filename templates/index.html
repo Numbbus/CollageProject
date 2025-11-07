@@ -11,7 +11,7 @@
   <body>
     <div class ="container">
         <div class="text-center"><h1>Collage Generator</h1></div>
-        
+
         <div class="row">
           <div class="col-lg-12 text-center w-50 mx-auto">
             <p> Select or drag and drop an image to turn it into a collage! The lower the resolution the finer the detail. For example a resolution of 10 would be 1 picture per 10x10 of pixels in the input image.</p>
@@ -36,7 +36,7 @@
           </div>
         </div>
 
-        <div class="row"><div class="col-lg-12 mx-auto w-25 mt-5 text-center" id="loadingGif"></div></div>
+        <div class="row"><div class="col-lg-6 mx-auto  mt-5 text-center" id="loadingGif"></div></div>
         
         {% if uploaded_image %}
           <div class="row mt-5">
@@ -66,7 +66,7 @@
       var d = document.getElementById('loadingGif')
 
       f.addEventListener('submit', function(event) {
-        d.innerHTML = '<h3> Generating... </h3> <img src="static/images/loading.gif" class="" />';
+        d.innerHTML = '<h3> Generating... </h3> <img src="static/images/loading.gif" width="180" />';
         
       })
 
