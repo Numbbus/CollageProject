@@ -10,7 +10,7 @@ import io
 import os
 import uuid
 
-import collageGenerator
+import collageGenerator as collage
 
 # Create FastAPI app
 app = FastAPI()
@@ -18,8 +18,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 PORT = 3000
-HOST = "10.30.1.9"
-
+HOST = "0.0.0.0"
 
 # Point FastAPI to your templates directory
 templates = Jinja2Templates(directory="templates")
@@ -30,7 +29,7 @@ async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/", response_class=HTMLResponse)
-async def upload_image(request: Request, file: UploadFile = File(...), resolution: int = Form(...)):
+async def upload_image(request: Request, file: UploadFile = File(...), resolution: int = Form(...), scale: int = Form(...)):
 
     contents = await file.read()
 
@@ -41,8 +40,11 @@ async def upload_image(request: Request, file: UploadFile = File(...), resolutio
     image.save(save_path)
 
     # Send to backend to create collage
-    collageGenerator.inputImg = image
-    result_path = await run_in_threadpool(collageGenerator.createAndSaveCollage, image, resolution)
+    collage.inputImg = image
+    result_path = await run_in_threadpool(collage.createAndSaveCollage, image, resolution, scale)
+
+    imgWidth = Image.open(save_path).width
+    imgHeight = Image.open(save_path).height
 
     return templates.TemplateResponse(
         "index.html",
@@ -51,6 +53,8 @@ async def upload_image(request: Request, file: UploadFile = File(...), resolutio
             "uploaded_image": f"{save_path}",
             "processed_image": result_path,
             "done_loading": True,
+            "image_width": imgWidth,
+            "image_height": imgHeight,
         },
     )
     
