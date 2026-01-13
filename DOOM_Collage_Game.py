@@ -146,7 +146,7 @@ for doom_map in episodes:
             bright_hsv = cv2.merge([h, s, v])
             img_bgr = cv2.cvtColor(bright_hsv, cv2.COLOR_HSV2BGR)
 
-            #img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_RGB2BGR)
+            img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_RGB2BGR)
 
             framePath = collage.createCollageForWebServer(img_bgr, RESOLUTION, LUT, cachedImages, path)
             frame = cv2.imread(framePath)
