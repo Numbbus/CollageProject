@@ -13,7 +13,7 @@ import collageGeneratorOPTOMIZED as collage
 # ----------------
 LUT = np.load("lut.npy")
 cachedImages = collage.cacheInputImages()
-RESOLUTION = 7
+RESOLUTION = 6
 
 path = "vizdoomFrame"
 # -----------------------------
@@ -23,7 +23,7 @@ game = vzd.DoomGame()
 
 
 
-game.set_doom_game_path("DOOM.WAD")
+game.set_doom_game_path("DOOM2.WAD")
 game.set_window_visible(True)
 game.set_mode(vzd.Mode.PLAYER)
 game.set_console_enabled(True)
@@ -100,11 +100,17 @@ print("Controls:")
 print("W/S = forward/backward, A/D = turn, Q/E = strafe, SPACE = shoot")
 print("SHIFT = alt fire, F = use/open doors, 1-7 = weapons, ESC = quit")
 
-episodes = [
+doom1_episodes = [
     "E1M1", "E1M2", "E1M3", "E1M4", "E1M5", "E1M6", "E1M7", "E1M8", "E1M9",
     "E2M1", "E2M2", "E2M3", "E2M4", "E2M5", "E2M6", "E2M7", "E2M8", "E2M9",
     "E3M1", "E3M2", "E3M3", "E3M4", "E3M5", "E3M6", "E3M7", "E3M8", "E3M9",
     "E4M1", "E4M2", "E4M3", "E4M4", "E4M5", "E4M6", "E4M7", "E4M8", "E4M9",
+]
+doom2_episodes = [
+    "MAP01", "MAP02", "MAP03", "MAP04", "MAP05", "MAP06", "MAP07", "MAP08",
+    "MAP09", "MAP10", "MAP11", "MAP12", "MAP13", "MAP14", "MAP15", "MAP16",
+    "MAP17", "MAP18", "MAP19", "MAP20", "MAP21", "MAP22", "MAP23", "MAP24",
+    "MAP25", "MAP26", "MAP27", "MAP28", "MAP29", "MAP30", "MAP31", "MAP32",
 ]
 
 # -----------------------------
@@ -113,10 +119,10 @@ episodes = [
 
 running = True
 
-skipToMission = None
+skipToMission = "map32"
 started = False
 
-for doom_map in episodes:
+for doom_map in doom2_episodes:
     if not running:
         break
 
@@ -146,7 +152,7 @@ for doom_map in episodes:
             bright_hsv = cv2.merge([h, s, v])
             img_bgr = cv2.cvtColor(bright_hsv, cv2.COLOR_HSV2BGR)
 
-            img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_RGB2BGR)
+            #img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_RGB2BGR)
 
             framePath = collage.createCollageForWebServer(img_bgr, RESOLUTION, LUT, cachedImages, path)
             frame = cv2.imread(framePath)
