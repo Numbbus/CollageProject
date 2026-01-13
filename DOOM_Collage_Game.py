@@ -13,7 +13,7 @@ import collageGeneratorOPTOMIZED as collage
 # ----------------
 LUT = np.load("lut.npy")
 cachedImages = collage.cacheInputImages()
-RESOLUTION = 5
+RESOLUTION = 7
 
 path = "vizdoomFrame"
 # -----------------------------
@@ -112,11 +112,21 @@ episodes = [
 # -----------------------------
 
 running = True
+
+skipToMission = None
+started = False
+
 for doom_map in episodes:
     if not running:
         break
 
     game.set_doom_map(doom_map)
+    
+
+    if(skipToMission is not None and not started):
+        game.set_doom_map(skipToMission)
+        started = True
+
     game.new_episode()
 
     while not game.is_episode_finished() and running:

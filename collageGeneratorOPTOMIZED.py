@@ -13,7 +13,7 @@ totalElapsedTime = datetime.now()
 INPUT_IMAGE = "helldiver.png"
 INPUT_IMAGES_PATH = "images"
 #SCALE = 100 # How many images per pixel of the input image
-RESOLUTION = 5 # Size of each tile
+RESOLUTION = 2 # Size of each tile
 useWebcam = True
 webcamResolution = (640,  480)
 # ====================================================
