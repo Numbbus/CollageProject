@@ -165,7 +165,9 @@ def createCollage(img):
 
     return output_img  
 
-def createCollageForWebServer(img, res, LUT, cachedImages):
+
+
+def createCollageForWebServer(img, res, LUT, cachedImages, path=None):
     
     """ Intended for use with the web server"""
 
@@ -199,8 +201,12 @@ def createCollageForWebServer(img, res, LUT, cachedImages):
 
         output_img[yOffset:yOffset+res, xOffset:xOffset+res] = selectedImg
 
-    savePath = f"static/processed/{uuid.uuid4().hex}.png"
-    cv2.imwrite(savePath, output_img)
+    if(path is None):
+        savePath = f"static/processed/{uuid.uuid4().hex}.png"
+        cv2.imwrite(savePath, output_img)
+    else:
+        savePath = path+f"{uuid.uuid4().hex}.png"
+        cv2.imwrite(savePath, output_img)
 
     return savePath 
 
