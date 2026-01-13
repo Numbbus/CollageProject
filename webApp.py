@@ -5,12 +5,13 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from fastapi.concurrency import run_in_threadpool
 import uvicorn
-
+import numpy as np
 import io
 import os
 import uuid
+import cv2 
 
-import collageGenerator as collage
+import collageGeneratorOPTOMIZED as collage
 
 # Create FastAPI app
 app = FastAPI()
@@ -18,7 +19,10 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 PORT = 3000
-HOST = "0.0.0.0"
+HOST = "localhost"
+
+LUT = np.load("lut.npy")
+cachedImages = collage.cacheInputImages("images")
 
 # Point FastAPI to your templates directory
 templates = Jinja2Templates(directory="templates")
@@ -29,22 +33,23 @@ async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/", response_class=HTMLResponse)
-async def upload_image(request: Request, file: UploadFile = File(...), resolution: int = Form(...), scale: int = Form(...)):
+async def upload_image(request: Request, file: UploadFile = File(...), resolution: int = Form(...)):
 
     contents = await file.read()
 
     image = Image.open(io.BytesIO(contents)).convert("RGB")
+    image = np.array(image)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
     filename = f"{uuid.uuid4().hex}.png"
     save_path = os.path.join("static", "processed", filename)
-    image.save(save_path)
+    cv2.imwrite(save_path, image)
 
-    # Send to backend to create collage
-    collage.inputImg = image
-    result_path = await run_in_threadpool(collage.createAndSaveCollage, image, resolution, scale)
 
-    imgWidth = Image.open(save_path).width
-    imgHeight = Image.open(save_path).height
+    result_path = await run_in_threadpool(collage.createCollageForWebServer, image, resolution, LUT, cachedImages)
+
+    imgWidth = image.shape[0]
+    imgHeight = image.shape[1]
 
     return templates.TemplateResponse(
         "index.html",

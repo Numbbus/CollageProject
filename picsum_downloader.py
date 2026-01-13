@@ -21,7 +21,7 @@ def progress_bar(iteration, total, prefix='', suffix='', length=50, fill='█'):
 
 
 
-number_of_images = 1000
+number_of_images = 2000
 photo_resolution = 250
 
 startingIndex = 0

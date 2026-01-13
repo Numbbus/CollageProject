@@ -13,8 +13,8 @@ totalElapsedTime = datetime.now()
 # ====================== CONFIG ======================
 INPUT_IMAGE = "helldiver.png"
 INPUT_IMAGES_PATH = "images"
-SCALE = 250 # Size of the collection images
-RESOLUTION = 3  # Size of each tile
+SCALE = 100 # Size of the collection images
+RESOLUTION = 10  # Size of each tile
 useWebcam = False
 openWindowWhenDone = False
 # ====================================================
