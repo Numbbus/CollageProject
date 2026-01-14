@@ -13,7 +13,7 @@ import collageGeneratorOPTOMIZED as collage
 # ----------------
 LUT = np.load("lut.npy")
 cachedImages = collage.cacheInputImages()
-RESOLUTION = 6
+RESOLUTION = 5
 
 path = "vizdoomFrame"
 # -----------------------------
@@ -21,9 +21,9 @@ path = "vizdoomFrame"
 # -----------------------------
 game = vzd.DoomGame()
 
+DOOMWAD = "DOOM.WAD"
 
-
-game.set_doom_game_path("DOOM2.WAD")
+game.set_doom_game_path(DOOMWAD)
 game.set_window_visible(True)
 game.set_mode(vzd.Mode.PLAYER)
 game.set_console_enabled(True)
@@ -119,17 +119,22 @@ doom2_episodes = [
 
 running = True
 
-skipToMission = "map32"
+skipToMission = None
 started = False
 
-for doom_map in doom2_episodes:
+if DOOMWAD == "DOOM.WAD":
+    episodes = doom1_episodes
+elif DOOMWAD == "DOOMWAD2.WAD":
+    episodes = doom2_episodes
+
+for doom_map in episodes:
     if not running:
         break
 
     game.set_doom_map(doom_map)
     
 
-    if(skipToMission is not None and not started):
+    if(skipToMission is not None):
         game.set_doom_map(skipToMission)
         started = True
 
@@ -154,8 +159,7 @@ for doom_map in doom2_episodes:
 
             #img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_RGB2BGR)
 
-            framePath = collage.createCollageForWebServer(img_bgr, RESOLUTION, LUT, cachedImages, path)
-            frame = cv2.imread(framePath)
+            frame = collage.createCollageForDOOM(img_bgr, RESOLUTION, LUT, cachedImages)
             cv2.imshow("DOOM", frame)
             cv2.waitKey(1) 
 
@@ -169,7 +173,6 @@ for doom_map in doom2_episodes:
             running = False
 
         game.make_action(action)
-        os.remove(framePath)
 
 
 # -----------------------------

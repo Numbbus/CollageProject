@@ -210,6 +210,39 @@ def createCollageForWebServer(img, res, LUT, cachedImages, path=None):
 
     return savePath 
 
+def createCollageForDOOM(img, res, LUT, cachedImages):
+    
+    """ Intended for use with DOOM_Collage_Game.py"""
+
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    height = img.shape[1]
+    width = img.shape[0]
+
+    outputWidth = int(height/res)*res
+    outputHeight = int(width/res)*res
+
+    output_img = np.zeros((outputHeight, outputWidth, 3), np.uint8)
+
+    splicedImageArr, splicedImageCoordsArr = spliceInputImage(img, res)
+
+    for i in range(len(splicedImageArr)):
+
+        # Get its avg rgb
+        croppedImageAverageRgbValues = computeAvgRGB(splicedImageArr[i])
+
+        selectedImg = cachedImages[LUT[quantize(croppedImageAverageRgbValues)]]
+
+        selectedImg = cv2.resize(selectedImg, (res, res))
+
+        # Paste it to the output
+        yOffset = splicedImageCoordsArr[i][1]
+        xOffset = splicedImageCoordsArr[i][0]
+
+        output_img[yOffset:yOffset+res, xOffset:xOffset+res] = selectedImg
+
+    return output_img 
+
 if __name__ == "__main__":
 
     inputImg = cv2.imread(INPUT_IMAGE)
