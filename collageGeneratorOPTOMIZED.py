@@ -90,7 +90,7 @@ def computeAvgRGB(img):
         return 0,0,0
     return(r, g, b)
 
-def spliceInputImage(img, res):
+def spliceInputImage(img, res, scale = None):
 
     splicedImage = []
     splicedCoords = []
@@ -108,8 +108,12 @@ def spliceInputImage(img, res):
 
             splicedImage.append(img[startY:endY, startX:endX])
 
-            splicedCoords.append((x*res, y*res))
+            if( scale is None):
+                splicedCoords.append((x*res, y*res))
+            else:
+                splicedCoords.append((x*scale, y*scale))
             
+    
     return splicedImage, splicedCoords
 
 def createCollage(img):
@@ -164,8 +168,6 @@ def createCollage(img):
     print(f"\n✅ Time To Generate: {elapsedSeconds:.2f} seconds") 
 
     return output_img  
-
-
 
 def createCollageForWebServer(img, res, LUT, cachedImages, path=None):
     
@@ -242,6 +244,51 @@ def createCollageForDOOM(img, res, LUT, cachedImages):
         output_img[yOffset:yOffset+res, xOffset:xOffset+res] = selectedImg
 
     return output_img 
+
+
+def createBigCollage(img, cachedImages, LUT, res = RESOLUTION, scale=1 ):
+
+    res = abs(res)
+
+    if(res == 0):
+        return "static/images/error.png"
+
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    height = img.shape[1]
+    width = img.shape[0]
+
+    multiplyer = scale // res # How much bigger the output image will be compared to original
+
+    outputWidth = (int(height/res)*res) * multiplyer
+    outputHeight = (int(width/res)*res) * multiplyer
+
+    output_img = np.zeros((outputHeight, outputWidth, 3), np.uint8)
+
+    
+    #print(multiplyer)
+
+    splicedImageArr, splicedImageCoordsArr = spliceInputImage(img, res, scale)
+
+    for i in range(len(splicedImageArr)):
+
+        # Get its avg rgb
+        croppedImageAverageRgbValues = computeAvgRGB(splicedImageArr[i])
+
+        selectedImg = cachedImages[LUT[quantize(croppedImageAverageRgbValues)]]
+
+        selectedImg = cv2.resize(selectedImg, (res, res))
+
+        # Paste it to the output
+        yOffset = splicedImageCoordsArr[i][1]
+        xOffset = splicedImageCoordsArr[i][0]
+        
+        selectedImg = cv2.resize(selectedImg, (scale, scale))
+
+        output_img[yOffset:yOffset+scale, xOffset:xOffset+scale] = selectedImg
+
+    return output_img  
+
 
 if __name__ == "__main__":
 
