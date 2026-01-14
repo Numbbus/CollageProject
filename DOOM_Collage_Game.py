@@ -28,7 +28,7 @@ game.set_doom_game_path(DOOMWAD)
 game.set_window_visible(True)
 game.set_mode(vzd.Mode.PLAYER)
 game.set_console_enabled(True)
-game.set_screen_resolution(vzd.ScreenResolution.RES_256X144)
+game.set_screen_resolution(vzd.ScreenResolution.RES_640X480)
 game.set_render_hud(True)
 game.set_render_weapon(True)
 game.set_render_crosshair(True)
@@ -125,7 +125,7 @@ started = False
 
 if DOOMWAD == "DOOM.WAD":
     episodes = doom1_episodes
-elif DOOMWAD == "DOOMWAD2.WAD":
+elif DOOMWAD == "DOOM2.WAD":
     episodes = doom2_episodes
 
 for doom_map in episodes:
@@ -158,13 +158,12 @@ for doom_map in episodes:
             bright_hsv = cv2.merge([h, s, v])
             img_bgr = cv2.cvtColor(bright_hsv, cv2.COLOR_HSV2BGR)
 
-            img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_RGB2BGR)
+            #img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_RGB2BGR)
 
-            #frame = collage.createCollageForDOOM(img_bgr, RESOLUTION, LUT, cachedImages)
-            frame = collage.createBigCollage(img_bgr, cachedImages, LUT, RESOLUTION, SCALE)
+            frame = collage.createCollageForDOOM(img_bgr, RESOLUTION, LUT, cachedImages)
+            #frame = collage.createBigCollage(img_bgr, cachedImages, LUT, RESOLUTION, SCALE)
             cv2.imshow("DOOM", frame)
-            #cv2.resizeWindow("DOOM", 640, 480)
-            cv2.imwrite("test.png", frame)
+
             cv2.waitKey(1) 
 
         action = [0] * game.get_available_buttons_size()

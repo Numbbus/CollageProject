@@ -13,8 +13,9 @@ totalElapsedTime = datetime.now()
 INPUT_IMAGE = "helldiver.png"
 INPUT_IMAGES_PATH = "images"
 #SCALE = 100 # How many images per pixel of the input image
-RESOLUTION = 2 # Size of each tile
-useWebcam = True
+RESOLUTION = 5 # Size of each tile
+SCALE = 10
+useWebcam = False
 webcamResolution = (640,  480)
 # ====================================================
 
@@ -81,9 +82,7 @@ def computeAvgRGB(img):
     # Get average across both axises and all three channels
     average_color = np.mean(img, axis=(0, 1))
 
-    # Assign each channel to the color 
-
-
+    # Assign each channel to the color awwwwwwwwwwwwwwwwwwwwwdddadaddddddddddwwwwwwwwdddddwa
     try:
         r, g, b = int(average_color[0]), int(average_color[1]), int(average_color[2])
     except:
@@ -140,7 +139,7 @@ def createCollage(img):
         # Get its avg rgb
         croppedImageAverageRgbValues = computeAvgRGB(splicedImageArr[i])
 
-        selectedImg = cahcedImages[LUT[quantize(croppedImageAverageRgbValues)]]
+        selectedImg = cachedImages[LUT[quantize(croppedImageAverageRgbValues)]]
 
 
         
@@ -246,14 +245,18 @@ def createCollageForDOOM(img, res, LUT, cachedImages):
     return output_img 
 
 
-def createBigCollage(img, cachedImages, LUT, res = RESOLUTION, scale=1 ):
-
+def createBigCollage(img, cachedImages, LUT, res = RESOLUTION, scale=SCALE ):
+    total = 100
     res = abs(res)
 
     if(res == 0):
         return "static/images/error.png"
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    completedNum = 0
+
+    collageStart = datetime.now()
 
     height = img.shape[1]
     width = img.shape[0]
@@ -287,6 +290,16 @@ def createBigCollage(img, cachedImages, LUT, res = RESOLUTION, scale=1 ):
 
         output_img[yOffset:yOffset+scale, xOffset:xOffset+scale] = selectedImg
 
+        # Increment how many sections completed
+        completedNum+=1
+
+        # Update the progress bar
+        progress_bar(completedNum, total, 'Generating:', 'Complete')     
+
+    elapsedSeconds = (datetime.now() - collageStart).total_seconds()
+
+    print(f"\n✅ Time To Generate: {elapsedSeconds:.2f} seconds") 
+
     return output_img  
 
 
@@ -294,7 +307,7 @@ if __name__ == "__main__":
 
     inputImg = cv2.imread(INPUT_IMAGE)
         
-    cahcedImages = cacheInputImages()
+    cachedImages = cacheInputImages()
 
     LUT = np.load("lut.npy")
 
@@ -305,6 +318,7 @@ if __name__ == "__main__":
 
         total = (int(inputImg.shape[1]/RESOLUTION) * int(inputImg.shape[0]/RESOLUTION)) 
 
+        #finalImg = createBigCollage(inputImg, LUT, cachedImages, RESOLUTION, SCALE)
         finalImg = createCollage(inputImg)
 
         savePath = f"{INPUT_IMAGE.strip('.png')}-collage.png"
